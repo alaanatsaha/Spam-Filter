@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>📧 AI Spam Detector</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #eef2f7, #f8fafc);
+}
+
+/* HEADER */
+#header {
+    background: linear-gradient(90deg, #0f172a, #1e3a8a);
+    color: white;
+    text-align: center;
+    padding: 18px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* OPEN BUTTON */
+#open-btn {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: white;
+    padding: 14px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* BOT */
+#bot {
+    position: fixed;
+    bottom: 90px;
+    right: 22px;
+    width: 370px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    display: none;
+}
+
+/* HEADER BOT */
+#bot-header {
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    color: white;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+/* CHAT */
+#chat {
+    height: 300px;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* USER */
+.user {
+    align-self: flex-end;
+    background: #3b82f6;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 16px 16px 0 16px;
+    max-width: 75%;
+}
+
+/* BOT */
+.bot-msg {
+    align-self: flex-start;
+    background: #f1f5f9;
+    padding: 10px 14px;
+    border-radius: 16px 16px 16px 0;
+    max-width: 75%;
+}
+
+/* INPUT */
+#controls {
+    display: flex;
+    border-top: 1px solid #e5e7eb;
+    background: white;
+}
+
+input {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    outline: none;
+}
+
+button {
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+}
+
+#send-btn {
+    background: #22c55e;
+    color: white;
+}
+
+#reset-btn {
+    background: #ef4444;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div id="header">📧 AI Spam Detector</div>
+
+<div id="open-btn" onclick="openBot()">💬 Open</div>
+
+<div id="bot">
+    <div id="bot-header">
+        🤖 Bot
+        <span onclick="closeBot()" style="cursor:pointer;">✖</span>
+    </div>
+
+    <div id="chat"></div>
+
+    <div id="controls">
+        <input id="input" placeholder="اكتب الرسالة..." />
+        <button id="send-btn" onclick="send()">إرسال</button>
+        <button id="reset-btn" onclick="resetChat()">حذف</button>
+    </div>
+</div>
+
+<script>
+function msg(text, type){
+    let div = document.getElementById("chat");
+    let p = document.createElement("div");
+    p.className = type;
+    p.innerText = text;
+    div.appendChild(p);
+    div.scrollTop = div.scrollHeight;
+}
+
+function openBot(){
+    document.getElementById("bot").style.display = "block";
+    msg("👋 مرحباً! أرسل رسالة", "bot-msg");
+}
+
+function closeBot(){
+    document.getElementById("bot").style.display = "none";
+}
+
+function resetChat(){
+    document.getElementById("chat").innerHTML = "";
+}
+
+function send(){
+    let input = document.getElementById("input");
+    let text = input.value.trim();
+
+    if(text === "") return;
+
+    msg(text, "user");
+    input.value = "";
+
+    fetch("/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: text})
+    })
+    .then(res => res.json())
+    .then(res => {
+        msg("📊 النتيجة: " + res.result, "bot-msg");
+    });
+}
+
+document.getElementById("input").addEventListener("keypress", function(e){
+    if(e.key === "Enter") send();
+});
+</script>
+
+</body>
+</html>
